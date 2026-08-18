@@ -1,0 +1,17 @@
+name: Comprobar disponibilidad Camping La Plata
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Comprobar disponibilidad
+        run: python check_reserva.py
