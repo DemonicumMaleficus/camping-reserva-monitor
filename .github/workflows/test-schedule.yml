@@ -6,7 +6,7 @@ on:
       - main
 
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "5 19 * * *"
 
   workflow_dispatch:
 
@@ -19,4 +19,5 @@ jobs:
         run: |
           echo "WORKFLOW EJECUTADO"
           echo "Evento: ${{ github.event_name }}"
+          echo "Hora UTC:"
           date -u
