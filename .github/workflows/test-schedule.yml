@@ -1,0 +1,19 @@
+name: Test Schedule
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Comprobar schedule
+        run: |
+          echo "================================"
+          echo "SCHEDULE FUNCIONA"
+          echo "Hora UTC:"
+          date -u
+          echo "================================"
