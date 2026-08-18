@@ -38,47 +38,48 @@ request = urllib.request.Request(
     }
 )
 
-try:
-    with urllib.request.urlopen(request, timeout=30) as response:
-        raw = response.read().decode("utf-8")
+with urllib.request.urlopen(request, timeout=30) as response:
+    raw = response.read().decode("utf-8")
 
-    print("Respuesta:", raw)
+print("Respuesta:", raw)
 
-    result = json.loads(raw)
-    results = result.get("results", [])
+result = json.loads(raw)
+results = result.get("results", [])
 
-    if results:
-        print("¡¡¡ DISPONIBILIDAD ENCONTRADA !!!")
-        
-        smtp_host = os.environ["SMTP_HOST"]
-        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-        smtp_user = os.environ["SMTP_USER"]
-        smtp_password = os.environ["SMTP_PASSWORD"]
-        email_to = os.environ["EMAIL_TO"]
+if not results:
+    print("Sin disponibilidad todavía.")
+    exit(0)
 
-        msg = EmailMessage()
-        msg["Subject"] = "🚨 ¡Reserva 2027 disponible!"
-        msg["From"] = smtp_user
-        msg["To"] = email_to
+print("¡¡¡ DISPONIBILIDAD ENCONTRADA !!!")
+print("Número de resultados:", len(results))
 
-        msg.set_content(
-            "¡Hay disponibilidad para el Camping La Plata!\n\n"
-            "Entrada: 30/07/2027\n"
-            "Salida: 16/08/2027\n"
-            "Personas: 2\n\n"
-            "Revisa la reserva inmediatamente."
-        )
+smtp_host = os.environ["SMTP_HOST"]
+smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+smtp_user = os.environ["SMTP_USER"]
+smtp_password = os.environ["SMTP_PASSWORD"]
+email_to = os.environ["EMAIL_TO"]
 
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_password)
-            server.send_message(msg)
+msg = EmailMessage()
+msg["Subject"] = "🚨 ¡DISPONIBILIDAD! Camping La Plata 2027"
+msg["From"] = smtp_user
+msg["To"] = email_to
 
-        print("Email enviado.")
+msg.set_content(
+    "¡ATENCIÓN!\n\n"
+    "El sistema de reservas del Camping La Plata "
+    "ha devuelto disponibilidad.\n\n"
+    "Entrada: 30/07/2027\n"
+    "Salida: 16/08/2027\n"
+    "Duración: 17 noches\n"
+    "Personas: 2\n"
+    "Tipo: Bungalow\n\n"
+    "Comprueba la reserva inmediatamente:\n"
+    "https://thelisresa.webcamp.fr/list.php"
+)
 
-    else:
-        print("Sin disponibilidad todavía.")
+with smtplib.SMTP(smtp_host, smtp_port) as server:
+    server.starttls()
+    server.login(smtp_user, smtp_password)
+    server.send_message(msg)
 
-except Exception as e:
-    print("ERROR:", e)
-    raise
+print("🚨 Correo de disponibilidad enviado.")
