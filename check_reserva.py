@@ -92,16 +92,65 @@ msg["Subject"] = "🚨 ¡DISPONIBILIDAD! Camping La Plata 2027"
 msg["From"] = smtp_user
 msg["To"] = email_to
 
+# Extraer información útil de los resultados
+lines = []
+
+for campsite_result in results:
+    campsite = campsite_result.get("campsite", {})
+    campsite_name = campsite.get("name", "Camping")
+
+    lines.append(f"🏕️ {campsite_name}")
+    lines.append("")
+
+    for result_group in campsite_result.get("results", []):
+        for item in result_group.get("products", []):
+
+            product = item.get("product", {})
+            product_name = product.get("name", "Alojamiento")
+
+            stock = item.get("stock", "N/D")
+            capacity = product.get("capacity", "N/D")
+            rooms = product.get("room", "N/D")
+            bathrooms = product.get("bathroom", "N/D")
+            surface = product.get("surface", "N/D")
+
+            lines.append(f"🏠 {product_name}")
+            lines.append(f"   Stock disponible: {stock}")
+            lines.append(f"   Capacidad: {capacity} personas")
+            lines.append(f"   Habitaciones: {rooms}")
+            lines.append(f"   Baños: {bathrooms}")
+            lines.append(f"   Superficie: {surface} m²")
+
+            for stay in item.get("stays", []):
+                begin = stay.get("begin", "N/D")
+                end = stay.get("end", "N/D")
+                price = stay.get("price", "N/D")
+                duration = stay.get("duration", "N/D")
+
+                lines.append(f"   📅 {begin} → {end}")
+                lines.append(f"   🌙 Duración: {duration} noches")
+                lines.append(f"   💶 Precio: {price} €")
+
+            lines.append("")
+
+details = "\n".join(lines)
+
 msg.set_content(
-    "¡ATENCIÓN!\n\n"
-    "El sistema de reservas del Camping La Plata "
-    "ha detectado disponibilidad.\n\n"
+    "🚨 ¡DISPONIBILIDAD DETECTADA!\n\n"
+    "El sistema de reservas del Camping Bahía de la Plata "
+    "ha detectado alojamiento disponible.\n\n"
+    "TU BÚSQUEDA:\n"
     "Entrada: 30/07/2027\n"
     "Salida: 16/08/2027\n"
     "Duración: 17 noches\n"
     "Personas: 2\n"
     "Tipo: Bungalow\n\n"
-    "Comprueba la reserva inmediatamente:\n"
+    "================================\n"
+    "ALOJAMIENTOS DISPONIBLES\n"
+    "================================\n\n"
+    + details
+    + "\n\n"
+    "🔗 Comprueba la reserva inmediatamente:\n"
     "https://thelisresa.webcamp.fr/list.php"
 )
 
