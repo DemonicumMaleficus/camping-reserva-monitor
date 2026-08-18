@@ -5,7 +5,7 @@ name: Comprobar disponibilidad Camping La Plata
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "* * * * *"
 
 permissions:
   contents: write
