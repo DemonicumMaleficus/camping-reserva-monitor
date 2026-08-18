@@ -1,7 +1,5 @@
 name: Comprobar disponibilidad Camping La Plata
 
-# Monitor automático cada 5 minutos
-
 on:
   workflow_dispatch:
   schedule:
