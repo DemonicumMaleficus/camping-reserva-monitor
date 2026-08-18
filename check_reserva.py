@@ -6,6 +6,8 @@ from email.message import EmailMessage
 
 URL = "https://thelisresa.webcamp.fr/2017/services/Search/search?camping=bhplata94"
 
+STATE_FILE = "availability_state.json"
+
 payload = {
     "dates": {
         "begin": "2027-07-30",
@@ -24,6 +26,16 @@ payload = {
     "chosenSite": None
 }
 
+# Leer estado anterior
+try:
+    with open(STATE_FILE, "r", encoding="utf-8") as f:
+        state = json.load(f)
+except FileNotFoundError:
+    state = {"available": False}
+
+previously_available = state.get("available", False)
+
+# Hacer la búsqueda
 data = json.dumps(payload).encode("utf-8")
 
 request = urllib.request.Request(
@@ -46,13 +58,29 @@ print("Respuesta:", raw)
 result = json.loads(raw)
 results = result.get("results", [])
 
-if not results:
+available = bool(results)
+
+print("Disponibilidad:", available)
+print("Resultados:", len(results))
+
+# Si NO hay disponibilidad
+if not available:
     print("Sin disponibilidad todavía.")
+
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump({"available": False}, f)
+
     exit(0)
 
+# Hay disponibilidad
 print("¡¡¡ DISPONIBILIDAD ENCONTRADA !!!")
-print("Número de resultados:", len(results))
 
+# Si ya habíamos avisado, no mandar otro correo
+if previously_available:
+    print("Ya se había enviado un aviso anteriormente. No se envía otro.")
+    exit(0)
+
+# Primera detección de disponibilidad
 smtp_host = os.environ["SMTP_HOST"]
 smtp_port = int(os.environ.get("SMTP_PORT", "587"))
 smtp_user = os.environ["SMTP_USER"]
@@ -67,7 +95,7 @@ msg["To"] = email_to
 msg.set_content(
     "¡ATENCIÓN!\n\n"
     "El sistema de reservas del Camping La Plata "
-    "ha devuelto disponibilidad.\n\n"
+    "ha detectado disponibilidad.\n\n"
     "Entrada: 30/07/2027\n"
     "Salida: 16/08/2027\n"
     "Duración: 17 noches\n"
@@ -83,3 +111,7 @@ with smtplib.SMTP(smtp_host, smtp_port) as server:
     server.send_message(msg)
 
 print("🚨 Correo de disponibilidad enviado.")
+
+# Guardar que ya hemos avisado
+with open(STATE_FILE, "w", encoding="utf-8") as f:
+    json.dump({"available": True}, f)
